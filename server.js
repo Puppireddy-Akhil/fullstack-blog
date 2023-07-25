@@ -1,16 +1,24 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
+const session = require("express-session")
+const globalErrHandler = require("./middlewares/globalErrHandler");
 const userRoutes = require("./routes/users/users");
 const postRoutes = require("./routes/posts/post");
 const commentRoutes = require("./routes/comments/comment");
-const globalErrHandler = require("./middlewares/globalErrHandler");
 const dbconnect = require("./config/dbConnect.js");
 
 const app = express();
 // it contains all the properties that has given to app by express  console.log(app);
-app.use(express.json()); // to pass the incoming data
 //middlewares
 //-----------
+app.use(express.json()); // to pass the incoming data
+
+//session config
+app.use(session({
+    secret:process.env.SESSION_KEY,
+    resave:false,
+    saveUninitialized:true,
+}))
 //users route
 app.use('/api/v1/users',userRoutes);
 //posts route

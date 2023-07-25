@@ -47,6 +47,9 @@ const appErr = require("../../utils/appErr")
       if(!isPasswordValid){
         return next(appErr("invalid login credentials"));
       }
+      //save the user into session
+      req.session.userAuth = userFound._id;
+      console.log(req.session);
       //send the user details
       res.json({
         status: "Login success",
