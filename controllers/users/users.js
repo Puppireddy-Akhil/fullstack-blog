@@ -27,7 +27,7 @@ const registerCtrl = async (req, res, next) => {
       data: user,
     });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
@@ -56,7 +56,7 @@ const loginCtrl = async (req, res, next) => {
       data: userFound,
     });
   } catch (error) {
-    return next(appErr(error));
+    return next(appErr(error.message));
   }
 };
 
@@ -75,7 +75,7 @@ const userDetailsCtrl = async (req, res) => {
       user:user,
     });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
@@ -91,29 +91,61 @@ const profileCtrl = async (req, res) => {
       data: user,
     });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
-const uploadProfilePhotoCtrl = async (req, res) => {
+const uploadProfilePhotoCtrl = async (req, res,next) => {
   try {
+    console.log(req.file.path);
+    //find the user to be updated
+    const userId = req.session.userAuth;
+    const userFound = await User.findById(userId);
+    //check if user not found
+    if(!userFound){
+      return next(appErr("user not found",403));
+    }
+    //update profile photo
+    const user = await User.findByIdAndUpdate(userId,{
+      profileImage: req.file.path,
+    },
+    {
+      new:true,
+    })
     res.json({
       status: "success",
-      user: "User profile image upload",
+      msg: "User profile image uploaded",
+      data:user,
     });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
-const uploadCoverImageCtrl = async (req, res) => {
+const uploadCoverImageCtrl = async (req, res,next) => {
   try {
+    console.log(req.file.path);
+    //find the user to be updated
+    const userId = req.session.userAuth;
+    const userFound = await User.findById(userId);
+    //check if user not found
+    if(!userFound){
+      return next(appErr("user not found",403));
+    }
+    //update cover Image
+    const user = await User.findByIdAndUpdate(userId,{
+      coverImage: req.file.path,
+    },
+    {
+      new:true,
+    })
     res.json({
       status: "success",
-      user: "User cover image upload",
+      msg: "User cover image uploaded",
+      data:user,
     });
   } catch (error) {
-    res.json(error);
+    return next(appErr(error.message));
   }
 };
 
