@@ -1,6 +1,6 @@
 const dotenv = require("dotenv").config();
 const express = require("express");
-const session = require("express-session")
+const session = require("express-session");
 const MongoStore = require("connect-mongo");
 const globalErrHandler = require("./middlewares/globalErrHandler");
 const userRoutes = require("./routes/users/users");
@@ -15,21 +15,23 @@ const app = express();
 app.use(express.json()); // to pass the incoming data
 
 //session config
-app.use(session({
-    secret:process.env.SESSION_KEY,
-    resave:false,
-    saveUninitialized:true,
+app.use(
+  session({
+    secret: process.env.SESSION_KEY,
+    resave: false,
+    saveUninitialized: true,
     store: new MongoStore({
-        mongoUrl: process.env.MONGO_URL,
-        ttl:24*60*60 // session expires in 1 day
-    })
-}))
+      mongoUrl: process.env.MONGO_URL,
+      ttl: 24 * 60 * 60, // session expires in 1 day
+    }),
+  })
+);
 //users route
-app.use('/api/v1/users',userRoutes);
+app.use("/api/v1/users", userRoutes);
 //posts route
-app.use('/api/v1/posts',postRoutes);
+app.use("/api/v1/posts", postRoutes);
 //comments
-app.use("/api/v1/comments",commentRoutes);
+app.use("/api/v1/comments", commentRoutes);
 
 //error handler middlewares
 app.use(globalErrHandler);
