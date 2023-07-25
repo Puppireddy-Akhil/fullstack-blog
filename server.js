@@ -7,7 +7,7 @@ const dbconnect = require("./config/dbConnect.js");
 
 const app = express();
 // it contains all the properties that has given to app by express  console.log(app);
-
+app.use(express.json()); // to pass the incoming data
 //middlewares
 //-----------
 //users route
