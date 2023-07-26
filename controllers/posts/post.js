@@ -40,7 +40,7 @@ const fetchPostCtrl = async (req, res,next) => {
       //get the id from params
       const id=req.params.id;
       //find the post
-      const post = await Post.findById(id);
+      const post = await Post.findById(id).populate("comments");
       res.json({
         status: "success",
         msg: "Post details",
@@ -53,7 +53,7 @@ const fetchPostCtrl = async (req, res,next) => {
 
 const fetchPostsCtrl = async (req, res,next) => {
     try {
-      const posts = await Post.find();
+      const posts = await Post.find().populate("comments");
       res.json({
         status: "success",
         msg: "Posts list",
@@ -101,6 +101,9 @@ const updatePostCtrl = async (req, res,next) => {
       description,
       category,
       image: req.file.path
+    },
+    {
+      new:true,
     });
     res.json({
       status: "success",

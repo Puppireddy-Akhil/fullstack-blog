@@ -66,13 +66,13 @@ const userDetailsCtrl = async (req, res) => {
     const userId = req.params.id;
     //find the user
     const user = await User.findById(userId);
-    if(!user){
+    if (!user) {
       return next(appErr("user not found"));
     }
     res.json({
       status: "success",
       msg: "User Details in controller",
-      user:user,
+      user: user,
     });
   } catch (error) {
     return next(appErr(error.message));
@@ -84,7 +84,9 @@ const profileCtrl = async (req, res) => {
     //get the login user
     const userID = req.session.userAuth;
     //find the user
-    const user = await User.findById(userID).populate('posts');
+    const user = await User.findById(userID)
+      .populate("posts")
+      .populate("comments");
     res.json({
       status: "success",
       msg: "User profile in controller",
@@ -95,109 +97,120 @@ const profileCtrl = async (req, res) => {
   }
 };
 
-const uploadProfilePhotoCtrl = async (req, res,next) => {
+const uploadProfilePhotoCtrl = async (req, res, next) => {
   try {
     console.log(req.file.path);
     //find the user to be updated
     const userId = req.session.userAuth;
     const userFound = await User.findById(userId);
     //check if user not found
-    if(!userFound){
-      return next(appErr("user not found",403));
+    if (!userFound) {
+      return next(appErr("user not found", 403));
     }
     //update profile photo
-    const user = await User.findByIdAndUpdate(userId,{
-      profileImage: req.file.path,
-    },
-    {
-      new:true,
-    })
-    res.json({
-      status: "success",
-      msg: "User profile image uploaded",
-      data:user,
-    });
-  } catch (error) {
-    return next(appErr(error.message));
-  }
-};
-
-const uploadCoverImageCtrl = async (req, res,next) => {
-  try {
-    console.log(req.file.path);
-    //find the user to be updated
-    const userId = req.session.userAuth;
-    const userFound = await User.findById(userId);
-    //check if user not found
-    if(!userFound){
-      return next(appErr("user not found",403));
-    }
-    //update cover Image
-    const user = await User.findByIdAndUpdate(userId,{
-      coverImage: req.file.path,
-    },
-    {
-      new:true,
-    })
-    res.json({
-      status: "success",
-      msg: "User cover image uploaded",
-      data:user,
-    });
-  } catch (error) {
-    return next(appErr(error.message));
-  }
-};
-
-const updatePasswordCtrl = async (req, res,next) => {
-  try {
-    const {password} = req.body;
-    if(password){
-      const salt = await bcrypt.genSalt(10);
-      const passwordHashed = await bcrypt.hash(password,salt);
-      //update user
-      const user = await User.findByIdAndUpdate(req.params.id,{
-      password:passwordHashed,
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        profileImage: req.file.path,
       },
       {
         new: true,
-      });
-      res.json({
-        status: "success",
-        msg: "User password updated",
-        data:user,
-        });
-    }else{
-      return next(appErr("provide the passwordfield to update the password"));
-    }
-    
+      }
+    );
+    res.json({
+      status: "success",
+      msg: "User profile image uploaded",
+      data: user,
+    });
   } catch (error) {
     return next(appErr(error.message));
   }
 };
 
-const updataUserCtrl = async (req, res,next) => {
+const uploadCoverImageCtrl = async (req, res, next) => {
+  try {
+    console.log(req.file.path);
+    //find the user to be updated
+    const userId = req.session.userAuth;
+    const userFound = await User.findById(userId);
+    //check if user not found
+    if (!userFound) {
+      return next(appErr("user not found", 403));
+    }
+    //update cover Image
+    const user = await User.findByIdAndUpdate(
+      userId,
+      {
+        coverImage: req.file.path,
+      },
+      {
+        new: true,
+      }
+    );
+    res.json({
+      status: "success",
+      msg: "User cover image uploaded",
+      data: user,
+    });
+  } catch (error) {
+    return next(appErr(error.message));
+  }
+};
+
+const updatePasswordCtrl = async (req, res, next) => {
+  try {
+    const { password } = req.body;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      const passwordHashed = await bcrypt.hash(password, salt);
+      //update user
+      const user = await User.findByIdAndUpdate(
+        req.params.id,
+        {
+          password: passwordHashed,
+        },
+        {
+          new: true,
+        }
+      );
+      res.json({
+        status: "success",
+        msg: "User password updated",
+        data: user,
+      });
+    } else {
+      return next(appErr("provide the passwordfield to update the password"));
+    }
+  } catch (error) {
+    return next(appErr(error.message));
+  }
+};
+
+const updataUserCtrl = async (req, res, next) => {
   try {
     const { fullname, email, password } = req.body;
     //check if email is not taken
-    const emailTaken =await User.findOne({email});
-    if(email){
-      if(emailTaken){
-        return next(appErr("Email is taken",400));
+    const emailTaken = await User.findOne({ email });
+    if (email) {
+      if (emailTaken) {
+        return next(appErr("Email is taken", 400));
       }
     }
     //update the user
-    const user = await User.findByIdAndUpdate(req.params.id,{
-      fullname,
-      email,
-    },
-    {
-      new : true, //to have the updated record
-    });
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      {
+        fullname,
+        email,
+      },
+      {
+        new: true, //to have the updated record
+      }
+    );
     res.json({
       status: "success",
       msg: "User update",
-      data:user
+      data: user,
     });
   } catch (error) {
     return next(appErr(error.message));
