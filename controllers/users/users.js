@@ -6,6 +6,7 @@ const registerCtrl = async (req, res, next) => {
   try {
     //check if the user exists (email)
     const { fullname, email, password } = req.body;
+    console.log(req.body);
     if (!fullname || !email || !password) {
       return next(appErr("All fields are required"));
     }
@@ -22,10 +23,8 @@ const registerCtrl = async (req, res, next) => {
       email,
       password: passwordHashed,
     });
-    res.json({
-      status: "success",
-      data: user,
-    });
+    //redirect
+    res.redirect('/api/v1/users/profile-page');
   } catch (error) {
     return next(appErr(error.message));
   }
