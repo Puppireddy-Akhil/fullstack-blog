@@ -6,13 +6,17 @@ const registerCtrl = async (req, res, next) => {
   try {
     //check if the user exists (email)
     const { fullname, email, password } = req.body;
-    console.log(req.body);
+    //console.log(req.body);
     if (!fullname || !email || !password) {
-      return next(appErr("All fields are required"));
+      return res.render("users/register", {
+        error: "All  fields are required",
+      });
     }
     const userFound = await User.findOne({ email });
     if (userFound) {
-      return next(appErr("User already Exist"));
+      return res.render("users/register", {
+        error: "Email is taken",
+      });
     }
     //Hash password
     const salt = await bcrypt.genSalt(10);
@@ -24,7 +28,7 @@ const registerCtrl = async (req, res, next) => {
       password: passwordHashed,
     });
     //redirect
-    res.redirect('/api/v1/users/profile-page');
+    res.redirect("/api/v1/users/profile-page");
   } catch (error) {
     return next(appErr(error.message));
   }
@@ -34,26 +38,29 @@ const loginCtrl = async (req, res, next) => {
   try {
     //check if the user exists (email)
     const { email, password } = req.body;
-    if (!email || !password) {
-      return next(appErr("all fields are required"));
+    if ( !email || !password) {
+      return res.render("users/login", {
+        error: "All  fields are required",
+      });
     }
     const userFound = await User.findOne({ email });
     if (!userFound) {
-      return next(appErr("invalid login credentials"));
-    }
+      return res.render("users/login", {
+        error: "invalid login credentials",
+      })
+   }
     //check if the password is correct
     const isPasswordValid = await bcrypt.compare(password, userFound.password);
     if (!isPasswordValid) {
-      return next(appErr("invalid login credentials"));
+      return res.render("users/login", {
+        error: "invalid login credentials",
+      })
     }
     //save the user into session
     req.session.userAuth = userFound._id;
-    console.log(req.session);
-    //send the user details
-    res.json({
-      status: "Login success",
-      data: userFound,
-    });
+  
+    //redirect
+    res.redirect("/api/v1/users/profile-page");
   } catch (error) {
     return next(appErr(error.message));
   }
@@ -217,14 +224,12 @@ const updataUserCtrl = async (req, res, next) => {
 };
 
 const logoutCtrl = async (req, res) => {
-  try {
-    res.json({
-      status: "success",
-      user: "User logout",
-    });
-  } catch (error) {
-    res.json(error);
-  }
+  
+    //destroy session
+    req.session.destroy(()=>{
+      res.redirect('/api/v1/users/login');
+    })
+  
 };
 
 module.exports = {

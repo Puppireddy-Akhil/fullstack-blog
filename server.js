@@ -9,13 +9,13 @@ const commentRoutes = require("./routes/comments/comment");
 const dbconnect = require("./config/dbConnect.js");
 
 const app = express();
-app.set('view engine','ejs');
-app.use(express.static(__dirname+'/public'));
+app.set("view engine", "ejs");
+app.use(express.static(__dirname + "/public"));
 // it contains all the properties that has given to app by express  console.log(app);
 //middlewares
 //-----------
 app.use(express.json()); // to pass the incoming json data
-app.use(express.urlencoded({extended: true}));//to pass form data
+app.use(express.urlencoded({ extended: true })); //to pass form data
 //session config
 app.use(
   session({
@@ -28,10 +28,20 @@ app.use(
     }),
   })
 );
-//render home page
-app.get('/',(req,res)=>{
-  res.render('index.ejs');
+// save the login user into locals
+app.use((req,res,next)=>{
+  if(req.session.userAuth){
+    res.locals.userAuth=req.session.userAuth;
+  }else{
+    res.locals.userAuth=null;
+  }
+  next();
 })
+
+//render home page
+app.get("/", (req, res) => {
+  res.render("index.ejs");
+});
 //users route
 app.use("/api/v1/users", userRoutes);
 //posts route
