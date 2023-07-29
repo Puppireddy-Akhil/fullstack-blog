@@ -69,17 +69,16 @@ const loginCtrl = async (req, res, next) => {
 const userDetailsCtrl = async (req, res) => {
   try {
     //get the userId from params
-    const userId = req.params.id;
+    const userId = req.session.userAuth; 
     //find the user
     const user = await User.findById(userId);
     if (!user) {
       return next(appErr("user not found"));
     }
-    res.json({
-      status: "success",
-      msg: "User Details in controller",
-      user: user,
-    });
+    res.render("users/updateUser",{
+      user,
+      error:"",
+    })
   } catch (error) {
     return next(appErr(error.message));
   }
@@ -93,11 +92,7 @@ const profileCtrl = async (req, res) => {
     const user = await User.findById(userID)
       .populate("posts")
       .populate("comments");
-    res.json({
-      status: "success",
-      msg: "User profile in controller",
-      data: user,
-    });
+    res.render('users/profile',{ user })
   } catch (error) {
     return next(appErr(error.message));
   }
@@ -105,13 +100,20 @@ const profileCtrl = async (req, res) => {
 
 const uploadProfilePhotoCtrl = async (req, res, next) => {
   try {
-    console.log(req.file.path);
+    //check if the file exists
+    if(!req.file){
+      res.render('users/uploadProfilePhoto',{
+        error:"please upload image",
+      })
+    }
     //find the user to be updated
     const userId = req.session.userAuth;
     const userFound = await User.findById(userId);
     //check if user not found
     if (!userFound) {
-      return next(appErr("user not found", 403));
+      res.render('users/uploadProfilePhoto',{
+        error:"User not found",
+      })
     }
     //update profile photo
     const user = await User.findByIdAndUpdate(
@@ -123,25 +125,30 @@ const uploadProfilePhotoCtrl = async (req, res, next) => {
         new: true,
       }
     );
-    res.json({
-      status: "success",
-      msg: "User profile image uploaded",
-      data: user,
-    });
+    res.redirect("/api/v1/users/profile-page")
   } catch (error) {
-    return next(appErr(error.message));
+    res.render('users/uploadProfilePhoto',{
+      error:error.message,
+    })
   }
 };
 
 const uploadCoverImageCtrl = async (req, res, next) => {
   try {
-    console.log(req.file.path);
+    //check if the file exists
+    if(!req.file){
+      res.render('users/uploadCoverPhoto',{
+        error:"please upload image",
+      })
+    }
     //find the user to be updated
     const userId = req.session.userAuth;
     const userFound = await User.findById(userId);
     //check if user not found
     if (!userFound) {
-      return next(appErr("user not found", 403));
+      res.render('users/uploadCoverPhoto',{
+        error:"User not found",
+      })
     }
     //update cover Image
     const user = await User.findByIdAndUpdate(
@@ -153,13 +160,11 @@ const uploadCoverImageCtrl = async (req, res, next) => {
         new: true,
       }
     );
-    res.json({
-      status: "success",
-      msg: "User cover image uploaded",
-      data: user,
-    });
+    res.redirect("/api/v1/users/profile-page")
   } catch (error) {
-    return next(appErr(error.message));
+    res.render('users/uploadProfilePhoto',{
+      error:error.message,
+    })
   }
 };
 
@@ -171,7 +176,7 @@ const updatePasswordCtrl = async (req, res, next) => {
       const passwordHashed = await bcrypt.hash(password, salt);
       //update user
       const user = await User.findByIdAndUpdate(
-        req.params.id,
+        req.session.userAuth,
         {
           password: passwordHashed,
         },
@@ -179,32 +184,46 @@ const updatePasswordCtrl = async (req, res, next) => {
           new: true,
         }
       );
-      res.json({
-        status: "success",
-        msg: "User password updated",
-        data: user,
-      });
+      res.redirect("/api/v1/users/profile-page")
+    
     } else {
-      return next(appErr("provide the passwordfield to update the password"));
+      res.render('users/updatePassword',{
+        error:"provide the password",
+      })
     }
   } catch (error) {
-    return next(appErr(error.message));
+    res.render('users/updatePassword',{
+      error:error.message,
+    })
   }
 };
 
-const updataUserCtrl = async (req, res, next) => {
+const updateUserCtrl = async (req, res, next) => {
   try {
-    const { fullname, email, password } = req.body;
+    const { fullname, email } = req.body;
+    //check 
+    if(!fullname||!email){
+      res.render('users/updateUser',{
+        error:"please provide details",
+      })
+    }
     //check if email is not taken
     const emailTaken = await User.findOne({ email });
-    if (email) {
+    const user = await User.findById(req.session.userAuth);
+    console.log(user.email);
+    if (email!==user.email) {
+      console.log("iam here")
       if (emailTaken) {
-        return next(appErr("Email is taken", 400));
+        console.log("iam here too")
+        res.render('users/updateUser',{
+          error:"Email is already taken",
+          user,
+        })
       }
     }
     //update the user
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
+     await User.findByIdAndUpdate(
+      req.session.userAuth,
       {
         fullname,
         email,
@@ -213,13 +232,12 @@ const updataUserCtrl = async (req, res, next) => {
         new: true, //to have the updated record
       }
     );
-    res.json({
-      status: "success",
-      msg: "User update",
-      data: user,
-    });
+    res.redirect("/api/v1/users/profile-page")
   } catch (error) {
-    return next(appErr(error.message));
+    res.render('users/updateUser',{
+      error:error.message,
+      user:"",
+    })
   }
 };
 
@@ -240,6 +258,6 @@ module.exports = {
   uploadProfilePhotoCtrl,
   uploadCoverImageCtrl,
   updatePasswordCtrl,
-  updataUserCtrl,
+  updateUserCtrl,
   logoutCtrl,
 };

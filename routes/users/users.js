@@ -9,7 +9,7 @@ const {
   uploadProfilePhotoCtrl,
   uploadCoverImageCtrl,
   updatePasswordCtrl,
-  updataUserCtrl,
+  updateUserCtrl,
   logoutCtrl,
 } = require("../../controllers/users/users");
 const protected = require("../../middlewares/protected");
@@ -31,21 +31,24 @@ userRoutes.get("/register", (req, res) => {
     error: "",
   });
 });
-//profile page
-userRoutes.get("/profile-page", (req, res) => {
-  res.render("users/profile");
-});
+
 //upload profile photo
 userRoutes.get("/upload-profile-photo-form", (req, res) => {
-  res.render("users/uploadProfilePhoto");
+  res.render("users/uploadProfilePhoto",{
+    error:"",
+  });
 });
 //upload cover photo
 userRoutes.get("/upload-cover-photo-form", (req, res) => {
-  res.render("users/uploadCoverPhoto");
+  res.render("users/uploadCoverPhoto",{
+    error:"",
+  });
 });
-//update user form
-userRoutes.get("/update-user-form", (req, res) => {
-  res.render("users/updateUser");
+//update user password
+userRoutes.get("/update-user-password", (req, res) => {
+  res.render("users/updatePassword",{
+    error:"",
+  });
 });
 
 //register
@@ -55,11 +58,11 @@ userRoutes.post("/register", registerCtrl);
 userRoutes.post("/login", loginCtrl);
 
 //GET/api/v1/users/profile/:id
-userRoutes.get("/profile", protected, profileCtrl);
+userRoutes.get("/profile-page", protected, profileCtrl);
 
 //PUT/api/v1/users/profile-photo-upload/:id
 userRoutes.put(
-  "/profile-photo-upload",
+  "/profile-photo-upload/",
   protected,
   upload.single("profile"),
   uploadProfilePhotoCtrl
@@ -67,17 +70,17 @@ userRoutes.put(
 
 //PUT/api/v1/users/cover-photo-upload/:id
 userRoutes.put(
-  "/cover-photo-upload",
+  "/cover-photo-upload/",
   protected,
   upload.single("coverImage"),
   uploadCoverImageCtrl
 );
 
 //PUT/api/v1/users/update-password/:id
-userRoutes.put("/update-password/:id", updatePasswordCtrl);
+userRoutes.put("/update-password", updatePasswordCtrl);
 
 //PUT/api/v1/users/update/:id
-userRoutes.put("/update/:id", updataUserCtrl);
+userRoutes.put("/update", updateUserCtrl);
 
 //GET/api/v1/users/logout
 userRoutes.get("/logout", logoutCtrl);

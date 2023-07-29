@@ -23,12 +23,7 @@ const appErr = require("../../utils/appErr");
       //save
       await post.save({validateBeforeSave:false});
       await user.save({validateBeforeSave:false});
-      
-      res.json({
-        status: "success",
-        msg: "comment created",
-        data:comment,
-      });
+      res.redirect(`/api/v1/posts/${post._id}`)
     } catch (error) {
       return next(appErr(error.message));
     }
@@ -36,14 +31,16 @@ const appErr = require("../../utils/appErr");
   
   const commentDetailsCtrl = async (req, res,next) => {
     try {
-      const comment = Comment.findById(req.params.id);
-      res.json({
-        status: "success",
-        comment: "Post comments",
-        data:comment,
-      });
+      const comment =await Comment.findById(req.params.id);
+      res.render("comments/updateComment",{
+        comment,
+        error:"",
+        
+      })
     } catch (error) {
-      return next(appErr(error.message))
+      res.render("comments/updateComment",{
+        error:error.message,
+      })
     }
   }
 
@@ -57,10 +54,7 @@ const appErr = require("../../utils/appErr");
       }
       //delete post
       await Comment.findByIdAndDelete(req.params.id);
-      res.json({
-        status: "success",
-        msg: "comment has been deleted successfully",
-      });
+      res.redirect(`/api/v1/posts/${req.query.postId}`)
     } catch (error) {
       return next(appErr(error.message));
     }
@@ -88,11 +82,8 @@ const appErr = require("../../utils/appErr");
       {
         new:true,
       });
-      res.json({
-        status: "success",
-        msg: "comment updated",
-        data:commentUpdated,
-      });
+      //redirect
+      
     } catch (error) {
       return next(appErr(error.message));
     }

@@ -2,20 +2,32 @@ const dotenv = require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const MongoStore = require("connect-mongo");
+const methodOverride = require("method-override");
 const globalErrHandler = require("./middlewares/globalErrHandler");
 const userRoutes = require("./routes/users/users");
 const postRoutes = require("./routes/posts/post");
 const commentRoutes = require("./routes/comments/comment");
+const Post = require("./models/post/Post");
 const dbconnect = require("./config/dbConnect.js");
+const { truncatePost } = require("./utils/helpers");
+
 
 const app = express();
+// it contains all the properties that has given to app by express  console.log(app);
+
+//helpers
+app.locals.truncatePost = truncatePost;
+
+//configure ejs
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
-// it contains all the properties that has given to app by express  console.log(app);
 //middlewares
 //-----------
 app.use(express.json()); // to pass the incoming json data
 app.use(express.urlencoded({ extended: true })); //to pass form data
+
+//method override
+app.use(methodOverride('_method'));
 //session config
 app.use(
   session({
@@ -39,8 +51,14 @@ app.use((req,res,next)=>{
 })
 
 //render home page
-app.get("/", (req, res) => {
-  res.render("index.ejs");
+app.get("/",async (req, res) => { 
+  try{
+    const posts = await Post.find().populate("user");
+    res.render("index", { posts } );
+  }catch(error){
+    res.render('index',{error:error.message})
+  }
+  
 });
 //users route
 app.use("/api/v1/users", userRoutes);

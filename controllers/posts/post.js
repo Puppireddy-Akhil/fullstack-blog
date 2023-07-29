@@ -6,7 +6,9 @@ const createPostCtrl = async (req, res, next) => {
   try {
     const { title, description, category, image, user } = req.body;
     if (!title || !description || !category || !req.file) {
-      return next(appErr("all the fields are required"));
+      return res.render("posts/addPost", {
+        error: "All  fields are required",
+      });
     }
     //find the user
     const userId = req.session.userAuth;
@@ -24,14 +26,11 @@ const createPostCtrl = async (req, res, next) => {
     //resave the user
     await userFound.save();
 
-    res.json({
-      status: "success",
-      msg: "Post created",
-      post: postCreated,
-      user: userFound,
-    });
+    res.redirect("/");
   } catch (error) {
-    return next(appErr(error.message));
+    return res.render("posts/addPost", {
+      error: error.message,
+    });
   }
 };
 
@@ -40,12 +39,15 @@ const fetchPostCtrl = async (req, res, next) => {
     //get the id from params
     const id = req.params.id;
     //find the post
-    const post = await Post.findById(id).populate("comments");
-    res.json({
-      status: "success",
-      msg: "Post details",
-      data: post,
-    });
+    const post = await Post.findById(id).populate({
+      path:"comments",
+      populate:{
+        path:"user",
+      }
+    }).populate("user");
+    res.render('posts/postDetails',{
+      post,
+      error:""})
   } catch (error) {
     return next(appErr(error.message));
   }
@@ -53,7 +55,7 @@ const fetchPostCtrl = async (req, res, next) => {
 
 const fetchPostsCtrl = async (req, res, next) => {
   try {
-    const posts = await Post.find().populate("comments");
+    const posts = await Post.find().populate("comments").populate("user");
     res.json({
       status: "success",
       msg: "Posts list",
@@ -70,53 +72,75 @@ const deletePostCtrl = async (req, res, next) => {
     const post = await Post.findById(req.params.id);
     //check if this user has created the post
     if (post.user.toString() !== req.session.userAuth.toString()) {
-      //conversion of object to string
-      return next(appErr("you are not allowed to delete this post", 403));
+     return res.render('posts/postDetails',{
+      post,
+      error:"you are not allowed to delete this post"
+     })
     }
     //delete post
     await Post.findByIdAndDelete(req.params.id);
-    res.json({
-      status: "success",
-      msg: "Post has been deleted successfully",
-    });
+    res.redirect("/");
   } catch (error) {
-    return next(appErr(error.message));
+    return res.render('posts/postDetails',{
+      post,
+      error:error.message,
+     })
   }
 };
 
 const updatePostCtrl = async (req, res, next) => {
   try {
     const { title, description, category } = req.body;
-    if (!(title || description || category || req.file)) {
-      return next(appErr("all the fields are required"));
-    }
     //find the post
     const post = await Post.findById(req.params.id);
     //check if this user has created the post
     if (post.user.toString() !== req.session.userAuth.toString()) {
-      //conversion of object to string
-      return next(appErr("you are not allowed to update this post", 403));
+      return res.render('posts/updatePost',{
+        post,
+        error:"You are not authorized to update this post",
+       })
     }
+    if (!(title && description && category)) {
+      return res.render('posts/updatePost',{
+        post,
+        error:"Provide all fields..",
+       })
+    }
+    
     //update post
-    const postUpdated = await Post.findByIdAndUpdate(
-      req.params.id,
-      {
-        title,
-        description,
-        category,
-        image: req.file.path,
-      },
-      {
-        new: true,
-      }
-    );
-    res.json({
-      status: "success",
-      msg: "Post updated",
-      postUpdated,
-    });
+    if(req.file){
+      const postUpdated = await Post.findByIdAndUpdate(
+        req.params.id,
+        {
+          title,
+          description,
+          category,
+          image: req.file.path,
+        },
+        {
+          new: true,
+        }
+      );
+    }else{
+      const postUpdated = await Post.findByIdAndUpdate(
+        req.params.id,
+        {
+          title,
+          description,
+          category,
+        },
+        {
+          new: true,
+        }
+      );
+    }
+    //redirect
+    res.redirect("/")
   } catch (error) {
-    return next(appErr(error.message));
+    return res.render('posts/updatePost',{
+      post,
+      error:"Provide all fields..",
+     })
   }
 };
 
