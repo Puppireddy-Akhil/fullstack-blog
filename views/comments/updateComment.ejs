@@ -30,7 +30,7 @@
         </small>
       <%}%>
      
-      <form action="/api/v1/comments/<%=comment?._id%>?_method=PUT" method="POST">
+      <form action="/api/v1/comments/<%=comment?._id%>?_method=PUT&postId=<%=comment.post%>" method="POST">
         
 
         <label for="comment">Comment</label>
