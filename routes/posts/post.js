@@ -13,6 +13,7 @@ const {
 const postRoutes = express.Router();
 
 const protected = require("../../middlewares/protected");
+const protectedToAddPost = require("../../middlewares/protectedToAddPost");
 
 const Post = require("../../models/post/Post");
 
@@ -23,7 +24,7 @@ const upload = multer({
 
 //forms
 
-postRoutes.get('/get-post-form',(req,res)=>{
+postRoutes.get('/get-post-form',protectedToAddPost,(req,res)=>{
   res.render('posts/addPost',{error:""});
 })
 
