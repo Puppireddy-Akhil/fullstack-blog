@@ -78,7 +78,7 @@
     <div class="latest-post-title">
       <!-- Icon -->
       <i class="fas fa-book-open"></i>
-      <h1>Latest Posts (20)</h1>
+      <h1>Latest Posts (<%=user?.posts?.length %>)</h1>
     </div>
 
     <!-- content -->
@@ -90,10 +90,6 @@
       <article class="post-content">
         <img src="<%=post?.image%>" alt="" class="post-image" />
         <p class="post-info">
-          <span class="post-author">
-            <i class="fas fa-user"></i>
-            <a href="#">Ram</a>
-          </span>
           <span class="post-date">
             <i class="far fa-calendar-alt"></i>
             <time datetime="2020-01-01"
@@ -107,7 +103,7 @@
         <div class="post-category">
           <span>Category:</span>
         </div>
-        <a href="/" class="post-read-more">Continue Reading...</a>
+        <a href="/api/v1/posts/<%=post?.id%>" class="post-read-more">Continue Reading...</a>
       </article>
       <%})%> <%} %>
     </section>

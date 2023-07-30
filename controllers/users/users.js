@@ -27,6 +27,7 @@ const registerCtrl = async (req, res, next) => {
       email,
       password: passwordHashed,
     });
+    req.session.userAuth = user._id;
     //redirect
     res.redirect("/api/v1/users/profile-page");
   } catch (error) {
