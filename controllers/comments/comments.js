@@ -12,6 +12,7 @@ const appErr = require("../../utils/appErr");
       const comment = await Comment.create({
         user:req.session.userAuth,
         message,
+        post:post._id
       });
       //push the comment
       post.comments.push(comment._id);
@@ -83,7 +84,7 @@ const appErr = require("../../utils/appErr");
         new:true,
       });
       //redirect
-      
+      res.redirect(`/api/v1/posts/${req.query.postId}`)
     } catch (error) {
       return next(appErr(error.message));
     }
