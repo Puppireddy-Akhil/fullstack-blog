@@ -135,7 +135,7 @@ const updatePostCtrl = async (req, res, next) => {
       );
     }
     //redirect
-    res.redirect("/")
+    res.redirect(`/api/v1/posts/${req.params.id}`)///api/v1/users/profile-page
   } catch (error) {
     return res.render('posts/updatePost',{
       post,
